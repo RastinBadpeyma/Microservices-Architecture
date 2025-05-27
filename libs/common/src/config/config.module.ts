@@ -11,6 +11,7 @@ import * as joi from 'joi';
       validationSchema: joi.object({
         MONGODB_URI: joi.string().required(),
       }),
+      isGlobal: true,
     }),
   ],
   providers: [ConfigService],

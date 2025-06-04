@@ -1,0 +1,106 @@
+# Stage 1: Development/Builder Stage
+# This stage is responsible for installing all dependencies (including devDependencies)
+# and compiling the TypeScript application.
+FROM node:alpine As development
+
+# Set the working directory inside the container.
+# All subsequent COPY and RUN commands will be executed relative to this path.
+WORKDIR /usr/src/app
+
+# Copy essential pnpm workspace files from the host to the container.
+# These files are crucial for pnpm to correctly resolve dependencies across the monorepo.
+# NOTE: For a monorepo, you must copy ALL relevant package.json files for pnpm to function correctly.
+COPY package.json ./
+COPY pnpm-lock.yaml ./
+# Suggested Improvement: Copy specific app and lib package.json files
+# COPY apps/reservations/package.json apps/reservations/
+# COPY libs/common/package.json libs/common/
+# COPY libs/shared-interfaces/package.json libs/shared-interfaces/
+# COPY libs/db-abstracts/package.json libs/db-abstracts/
+# ... add any other libs/apps that 'reservations' depends on
+
+# Install pnpm globally within this stage.
+# This makes the 'pnpm' command available for subsequent RUN instructions.
+RUN npm install -g pnpm
+
+# Install all project dependencies (including devDependencies).
+# This is necessary for the build process (e.g., TypeScript compiler).
+RUN pnpm install
+
+# Copy all remaining source code from the monorepo root to the container.
+# This includes all 'apps' and 'libs' source directories, which are needed for TypeScript compilation.
+COPY . .
+
+# Build (compile) the specific NestJS microservice (e.g., 'reservations').
+# This command typically compiles TypeScript to JavaScript and places the output in the 'dist' directory.
+# Ensure that 'pnpm run build reservations' is defined in your root package.json scripts.
+# output: usr/src/app/dist
+RUN pnpm run build reservations
+
+# Stage 2: Production/Runner Stage
+# This stage creates the final, lean, and production-ready Docker image.
+# It only copies necessary runtime artifacts from the 'development' stage.
+FROM node:alpine as production
+
+# Define a build-time argument for NODE_ENV, with a default of 'production'.
+# This allows overriding the environment during build (e.g., --build-arg NODE_ENV=staging).
+ARG NODE_ENV=production
+# Set the NODE_ENV environment variable inside the final container.
+# This variable will be accessible by your NestJS application at runtime (e.g., via ConfigService).
+ENV NODE_ENV=${NODE_ENV}
+
+# Set the working directory for this new stage.
+# It's a common practice to use the same working directory for consistency.
+WORKDIR /usr/src/app
+
+# Copy essential pnpm workspace files needed for production dependency installation.
+# These are copied again to ensure pnpm can resolve production dependencies in this new stage.
+# NOTE: Same improvement suggestion as above for copying specific package.json files.
+COPY package.json ./
+COPY pnpm-lock.yaml ./
+
+# Install pnpm globally again in this new stage.
+# This ensures 'pnpm' is available even if previous stages are cached or base image changes.
+RUN npm install -g pnpm
+
+# Install only production dependencies.
+# The '--prod' flag ensures that devDependencies in package.json are excluded, significantly reducing image size and just read dependencies in package.json.
+RUN pnpm install --prod
+
+# Copy the compiled application code from the 'development' stage.
+# This is the core of the multi-stage build: it only takes the necessary compiled output.
+# '--from=development': Specifies the source stage to copy from.
+# '/usr/src/app/dist': The source path within the 'development' stage (where the build output resides).
+# './dist': The destination path within the current 'production' stage.
+# This effectively transfers the compiled JavaScript application without carrying over build tools or devDependencies.
+COPY --from=development /usr/src/app/dist ./dist
+
+# Specify the default command to run when the container starts.
+# This command will execute the compiled main JavaScript file of your NestJS microservice.
+# 'dist/apps/reservations/main' refers to the compiled JavaScript file from the build step.
+CMD ["node", "dist/apps/reservations/main"]
+
+
+
+
+# -t reservations-service: Tags the resulting Docker image with the name reservations-service (and typically latest as the tag if not specified). This tag will point to the image created by the last stage in the Dockerfile (production).
+
+# -f apps/reservations/Dockerfile: Specifies the path to the Dockerfile to be used for the build.
+
+# .: Sets the build context to the current directory (the monorepo root). This is crucial because COPY commands need access to files across the entire monorepo.
+docker build -t reservations-service -f apps/reservations/Dockerfile .
+
+
+
+
+
+
+
+
+
+# docker run: The command to create and start a new container.
+# -p 3000:3000: Maps port 3000 inside the container to port 3000 on your host machine. This allows you to access your NestJS service via http://localhost:3000.
+# --name my-reservations-container: Assigns a human-readable name to your container for easier management.
+# --env-file apps/reservations/.env: Mounts the .env file specific to your reservations microservice into the container. This provides your application with necessary environment variables (like MONGODB_URI, NODE_ENV, etc.). This is the recommended way to pass environment variables, rather than embedding sensitive data directly in the Dockerfile.
+# reservations-service: The name of the Docker image from which to create the container (the image tagged in the build step).
+docker run -p 3000:3000 --name my-reservations-container --env-file apps/reservations/.env reservations-service

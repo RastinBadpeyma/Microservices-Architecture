@@ -58,7 +58,7 @@ export abstract class AbstractRepository<TDocument extends AbstractDocument> {
     return document
   }
 
-// filteQuery is type saftey that its related to monngooose type definition
+  // filteQuery is type saftey that its related to monngooose type definition
   async find(filterQuery: FilterQuery<TDocument>): Promise<TDocument[]> {
     return this.model.find(filterQuery).lean<TDocument[]>(true)
   }

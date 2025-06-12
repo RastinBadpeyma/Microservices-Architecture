@@ -8,8 +8,8 @@ async function bootstrap() {
   const app = await NestFactory.create(ReservationsModule)
   app.useGlobalPipes(new ValidationPipe({ whitelist: true })) //remove extra properties
   app.useLogger(app.get(Logger))
-   const configService = app.get(ConfigService);
-   const port = configService.get('PORT');
-  await app.listen(port);
+  const configService = app.get(ConfigService)
+  const port = configService.get('PORT')
+  await app.listen(port)
 }
 bootstrap()

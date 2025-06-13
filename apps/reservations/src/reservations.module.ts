@@ -8,20 +8,20 @@ import {
   ReservationSchema,
 } from './models/reservation.schema'
 import { ConfigModule, ConfigService } from '@nestjs/config'
-import * as Joi from 'joi';
+import * as Joi from 'joi'
 
 @Module({
   imports: [
     DatabaseModule,
     LoggerModule,
     ConfigModule.forRoot({
-     isGlobal: true,
-     validationSchema:Joi.object({
+      isGlobal: true,
+      validationSchema: Joi.object({
         MONGODB_URI: Joi.string().required(),
         PORT: Joi.number().required(),
-     }),
+      }),
     }),
-    
+
     // MongooseModule.forFeature([{ name: ReservationDocument.name , schema: ReservationSchema }]),
     DatabaseModule.forFeature([
       { name: ReservationDocument.name, schema: ReservationSchema },

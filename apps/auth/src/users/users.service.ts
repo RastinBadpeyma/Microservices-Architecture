@@ -2,6 +2,7 @@ import { Body, Injectable, UnauthorizedException } from '@nestjs/common'
 import { UserRepository } from './user.repository'
 import { CreateUserDto } from './dto/create-user.dto'
 import * as bcrypt from 'bcryptjs'
+import { GetUserDto } from './dto/get-user.dto'
 
 @Injectable()
 export class UsersService {
@@ -12,6 +13,7 @@ export class UsersService {
       ...createUserDto,
       password: await bcrypt.hash(createUserDto.password , 10),
     })
+    return user;
   }
 
   async VerifyUser(email, password) {
@@ -21,5 +23,9 @@ export class UsersService {
       throw new UnauthorizedException('user doesnt exist')
     }
     return user
+  }
+
+  async getUser(getUserDto: GetUserDto){
+    return this.userRepo.find(getUserDto);
   }
 }

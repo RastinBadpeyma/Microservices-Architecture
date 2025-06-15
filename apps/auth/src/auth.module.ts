@@ -19,6 +19,7 @@ import { JwtStrategy } from './strategies/jwt-strategy'
         MONGODB_URI: Joi.string().required(),
         JWT_SECRET: Joi.string().required(),
         JWT_EXPIRATION: Joi.string().required(),
+        PORT: Joi.number().required(),
       }),
     }),
     JwtModule.registerAsync({

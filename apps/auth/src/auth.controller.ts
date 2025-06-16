@@ -1,10 +1,13 @@
 import { Controller, Get, Post, Res, UseGuards } from '@nestjs/common'
 import { AuthService } from './auth.service'
 import { LocalAuthGuard } from './guards/local-auth.guard'
-import { CurrentUser } from './decorator/current-user.decorator'
+
 import { UsersDocument } from './users/models/user.schema'
 
 import { Response } from 'express'
+import { JwtAuthGuard } from './guards/jwt-auth.guard'
+import { MessagePattern, Payload } from '@nestjs/microservices'
+import { CurrentUser } from '@app/common'
 
 @Controller()
 export class AuthController {
@@ -19,4 +22,12 @@ export class AuthController {
     const jwt = this.authService.login(user, response);
     response.send(jwt);
   }
+
+  @UseGuards(JwtAuthGuard)
+  //@messagePattern: it allows us to accept incoming RPC calls on our chosen transport layer
+  @MessagePattern('authenticate')
+  async authenticate(@Payload() data: any) {
+    return data.user;
+  }
+
 }

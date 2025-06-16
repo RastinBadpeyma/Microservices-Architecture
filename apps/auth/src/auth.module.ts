@@ -8,6 +8,7 @@ import * as Joi from 'joi'
 import { LoggerModule } from 'nestjs-pino'
 import { LocalStrategy } from './strategies/local-strategy'
 import { JwtStrategy } from './strategies/jwt-strategy'
+import { JwtAuthGuard } from './guards/jwt-auth.guard'
 
 @Module({
   imports: [
@@ -19,7 +20,8 @@ import { JwtStrategy } from './strategies/jwt-strategy'
         MONGODB_URI: Joi.string().required(),
         JWT_SECRET: Joi.string().required(),
         JWT_EXPIRATION: Joi.string().required(),
-        PORT: Joi.number().required(),
+        HTTP_PORT: Joi.number().required(),
+        TCP_PORT:Joi.number().required(),
       }),
     }),
     JwtModule.registerAsync({

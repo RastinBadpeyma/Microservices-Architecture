@@ -13,6 +13,8 @@ async function bootstrap() {
   app.connectMicroservice({
     transport: Transport.TCP,  
     options: {
+      // why we use 0.0.0.0?
+      // why we ust set tcp port number in auth?
       host: '0.0.0.0',
       port: configService.get('TCP_PORT')
     }

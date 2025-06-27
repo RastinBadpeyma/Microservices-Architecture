@@ -15,6 +15,8 @@ export class JwtAuthGuard implements CanActivate{
     if (!jwt) {
         return false;
     }
+    // whay actually happend when authenticate call and what happend after that?
+    // why we create user interface
     return this.authClient.send<UserDto>('authenticate' , {
         Authentication: jwt,
     })

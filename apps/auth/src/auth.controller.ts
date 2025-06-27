@@ -25,6 +25,8 @@ export class AuthController {
 
   @UseGuards(JwtAuthGuard)
   //@messagePattern: it allows us to accept incoming RPC calls on our chosen transport layer
+  // what @payload does?
+  //when we put the user in @currentUser() after this?
   @MessagePattern('authenticate')
   async authenticate(@Payload() data: any) {
     return data.user;

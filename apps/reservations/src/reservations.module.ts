@@ -28,6 +28,10 @@ import { ClientsModule, Transport } from '@nestjs/microservices'
     }),
      ClientsModule.registerAsync([
       {
+ 
+      /* we use AUTH_SERVICE in libs/common/auth/jwt-auth.guard and nest understand that it should store the TCP client registered with 
+          the AUTH_SERVICE token into the client
+      */
         name: AUTH_SERVICE,
         useFactory:(confgiService:ConfigService) => ({
           transport: Transport.TCP,

@@ -12,6 +12,8 @@ export class PaymentsService {
     {
       apiVersion: '2025-05-28.basil',
     });
+    // console.log('Stripe Key:', this.configService.get('STRIPE_SECRET_KEY'));
+
   }
 
   async createCharge({amount}: CreateChargeDto){
@@ -20,7 +22,11 @@ export class PaymentsService {
       amount: amount * 100,
       confirm: true,
       currency: 'usd',
-      payment_method: 'pm_card_visa'
+      payment_method: 'pm_card_visa',
+       automatic_payment_methods: {
+         enabled: true,
+         allow_redirects: 'never',
+        },
     });
 
     return paymentIntent;

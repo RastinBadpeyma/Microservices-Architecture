@@ -1,0 +1,15 @@
+{
+    "startDate": "02-01-2023",
+     "endDate": "02-01-2025",
+     "placeId": "12",
+     "invoiceId": "12",
+     "charge": {
+        "amount": 5,
+        "card": {
+            "cvc": "412",
+            "exp_month": 12,
+            "exp_year":2027,
+            "number": "4242 4242 4242 4242"
+        }
+     }
+}

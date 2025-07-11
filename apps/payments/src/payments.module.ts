@@ -15,7 +15,6 @@ import Stripe from 'stripe';
             STRIPE_SECRET_KEY:Joi.string().required(),
           }),
         }),
-        Stripe,
         LoggerModule
   ],
   controllers: [PaymentsController],

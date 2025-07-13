@@ -1,10 +1,10 @@
 import { Module } from '@nestjs/common';
 import { PaymentsController } from './payments.controller';
 import { PaymentsService } from './payments.service';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import * as Joi from 'joi'
-import { LoggerModule } from '@app/common';
-import Stripe from 'stripe';
+import { LoggerModule, NOTIFICATIONS_SERVICE } from '@app/common';
+import { ClientsModule, Transport } from '@nestjs/microservices';
 
 @Module({
   imports: [
@@ -15,6 +15,20 @@ import Stripe from 'stripe';
             STRIPE_SECRET_KEY:Joi.string().required(),
           }),
         }),
+
+        ClientsModule.registerAsync([
+          {
+            name: NOTIFICATIONS_SERVICE,
+            useFactory: (configService: ConfigService) => ({
+              transport: Transport.TCP,
+              options: {
+                host:configService.get('NOTIFICATIONS_HOST'),
+                port:configService.get('NOTIFICATIONS_PORT')
+              }
+            }),
+            inject:[ConfigService]
+          }
+        ]),
         LoggerModule
   ],
   controllers: [PaymentsController],

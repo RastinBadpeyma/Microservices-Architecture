@@ -43,7 +43,7 @@ services:
     target: development
    command: pnpm run start:dev notifications
    env_file:
-    - ./apps/payments/.env
+    - ./apps/notifications/.env
    volumes:
     - .:/usr/src/app   
 
